@@ -1,53 +1,115 @@
-## GET payments/{payment_id}
+# Payment Methods Documentation Please reference to API 2.0 DOC -> https://docs.khipu.com/openapi/es/v2/instant-payment/openapi/overview/
 
-### Response:
+## Get Payment Details
+Retrieve detailed information about a specific payment using its ID.
 
-#### Payment data:
+### Endpoint
+```http
+GET /payments/{payment_id}
+```
 
-- **payment_id** (String): Identificador único del pago, es una cadena alfanumérica de 12 caracteres. Cómo este identificador es único, se puede usar, por ejemplo, para evitar procesar una notificación repetida.
-- **payment_url** (String): URL principal del pago, si el usuario no ha elegido previamente un método de pago se le muestran las opciones.
-- **simplified_transfer_url** (String): URL de pago simplificado.
-- **transfer_url** (String): URL de pago normal.
-- **app_url** (String): URL para invocar el pago desde un dispositivo móvil usando la APP de Khipu.
-- **ready_for_terminal** (Boolean): Es ‘true’ si el pago ya cuenta con todos los datos necesarios para abrir directamente la aplicación de pagos Khipu.
-- **notification_token** (String): Cadena de caracteres alfanuméricos que identifican unicamente al pago, es el identificador que el servidor de Khipu enviará al servidor del comercio cuando notifique que un pago está conciliado.
-- **receiver_id** (Long): Identificador único de una cuenta de cobro.
-- **conciliation_date** (Date): Fecha y hora de conciliación del pago. Formato ISO-8601. Ej: 2017-03-01T13:00:00Z.
-- **subject** (String): Motivo del pago.
-- **amount** (Double).
-- **currency** (String): El código de moneda en formato ISO-4217.
-- **status** (String): Estado del pago, puede ser ‘pending’ (el pagador aún no comienza a pagar), ‘verifying’ (se está verificando el pago) o ‘done’, cuando el pago ya está confirmado.
-- **status_detail** (String): Detalle del estado del pago.
-- **body** (String): Detalle del cobro.
-- **picture_url** (String): URL de cobro.
-- **receipt_url** (String): URL del comprobante de pago.
-- **return_url** (String): URL donde se redirige al pagador luego que termina el pago.
-- **cancel_url** (String): URL donde se redirige al pagador luego de que desiste hacer el pago.
-- **notify_url** (String): URL del webservice donde se notificará el pago.
-- **notify_api_version** (String): Versión de la api de notificación.
-- **expires_date** (Date): Fecha máxima para ejecutar el pago (en formato ISO-8601). El cliente podrá realizar varios intentos de pago hasta dicha fecha. Cada intento tiene un plazo individual de 3 horas para su ejecución.
-- **attachment_urls** (Array[String]): URLs de archivos adjuntos al pago.
+### Response Structure
 
-#### Payer data:
+#### 🔐 Payment Core Information
+| Field | Type | Description |
+|-------|------|-------------|
+| `payment_id` | String | Unique 12-character alphanumeric payment identifier. Used to prevent duplicate notification processing |
+| `status` | String | Payment status: `pending`, `verifying`, or `done` |
+| `status_detail` | String | Detailed payment status information |
+| `amount` | Double | Payment amount |
+| `currency` | String | Currency code in ISO-4217 format |
+| `transaction_id` | String | Merchant-assigned payment identifier |
 
-- **bank** (String): Nombre del banco seleccionado por el pagador.
-- **bank_id** (String): Identificador del banco seleccionado por el pagador.
-- **payer_name** (String): Nombre del pagador.
-- **payer_email** (String): Correo electrónico del pagador.
-- **personal_identifier** (String): Identificador personal del pagador.
-- **bank_account_number** (String): Número de cuenta bancaria del pagador.
-- **out_of_date_conciliation** (Boolean): Es ‘true’ si la conciliación del pago fue hecha luego de la fecha de expiración.
-- **transaction_id** (String): Identificador del pago asignado por el cobrador.
-- **custom** (String máximo 4096 caracteres): Campo genérico que asigna el cobrador al momento de hacer el pago.
-- **responsible_user_email** (String): Correo electrónico de la persona responsable del pago.
-- **send_reminders** (Boolean): Es ‘true’ cuando este es un cobro por correo electrónico y Khipu enviará recordatorios.
-- **send_email** (Boolean): Es ‘true’ cuando Khipu enviará el cobro por correo electrónico.
-- **payment_method** (String): Método de pago usado por el pagador, puede ser ‘regular_transfer’ (transferencia normal), ‘simplified_transfer’ (transferencia simplificada).
-- **funds_source** (String): Origen de fondos usado por el pagador, puede ser ‘debit’ para pago con débito, ‘prepaid’ para pago con prepago, ‘credit’ para pago con crédito o vacío en el caso de que se haya pagado mediante transferencia bancaria.
+#### 🔗 Payment URLs
+| Field | Type | Description |
+|-------|------|-------------|
+| `payment_url` | String | Main payment URL (shows payment options if method not selected) |
+| `simplified_transfer_url` | String | Simplified payment process URL |
+| `transfer_url` | String | Standard payment process URL |
+| `app_url` | String | Mobile payment URL for Khipu APP |
+| `receipt_url` | String | Payment receipt URL |
+| `picture_url` | String | Payment image URL |
 
-#### Response Codes:
+#### 📝 Payment Details
+| Field | Type | Description |
+|-------|------|-------------|
+| `subject` | String | Payment reason |
+| `body` | String | Detailed payment description |
+| `custom` | String | Generic field set by merchant (max 4096 characters) |
+| `notification_token` | String | Unique identifier for payment reconciliation notifications |
+| `receiver_id` | Long | Unique collection account identifier |
 
-- **200:** Éxito
-- **400:** Datos inválidos
-- **403:** Error de autorización
-- **503:** Error de operación
+#### 👤 Payer Information
+| Field | Type | Description |
+|-------|------|-------------|
+| `payer_name` | String | Payer's full name |
+| `payer_email` | String | Payer's email address |
+| `personal_identifier` | String | Payer's personal identification |
+| `responsible_user_email` | String | Email of person responsible for payment |
+
+#### 🏦 Bank Details
+| Field | Type | Description |
+|-------|------|-------------|
+| `bank` | String | Selected bank name |
+| `bank_id` | String | Selected bank identifier |
+| `bank_account_number` | String | Payer's bank account number |
+| `payment_method` | String | Used payment method: `regular_transfer` or `simplified_transfer` |
+| `funds_source` | String | Fund source: `debit`, `prepaid`, `credit`, or empty for bank transfer |
+
+#### ⚙️ Configuration
+| Field | Type | Description |
+|-------|------|-------------|
+| `ready_for_terminal` | Boolean | `true` if payment is ready for Khipu payment app |
+| `send_reminders` | Boolean | `true` if Khipu should send payment reminders |
+| `send_email` | Boolean | `true` if Khipu should send payment by email |
+| `out_of_date_conciliation` | Boolean | `true` if payment reconciliation occurred after expiration |
+
+#### 📅 Dates and Timeline
+| Field | Type | Description |
+|-------|------|-------------|
+| `conciliation_date` | Date | Payment reconciliation date/time (ISO-8601) |
+| `expires_date` | Date | Payment execution deadline (ISO-8601) |
+
+#### 🔄 Callback URLs
+| Field | Type | Description |
+|-------|------|-------------|
+| `return_url` | String | Redirect URL after successful payment |
+| `cancel_url` | String | Redirect URL after payment cancellation |
+| `notify_url` | String | Webhook URL for payment notifications |
+| `notify_api_version` | String | Notification API version |
+
+#### 📎 Additional Information
+| Field | Type | Description |
+|-------|------|-------------|
+| `attachment_urls` | Array[String] | URLs of files attached to payment |
+
+### Response Codes
+
+| Code | Status | Description |
+|------|--------|-------------|
+| 200 | Success | Request processed successfully |
+| 400 | Bad Request | Invalid data provided |
+| 403 | Forbidden | Authorization error |
+| 503 | Service Unavailable | Operation error |
+
+### Important Notes
+
+1. Payment attempts can be made multiple times until the expiration date
+2. Each payment attempt has a 3-hour execution window
+3. The notification token is used for server-to-server payment confirmation
+4. Personal identifier and bank account information are only available for completed payments
+
+### Example Response
+
+```json
+{
+  "payment_id": "abc123def456",
+  "status": "done",
+  "amount": 1000.00,
+  "currency": "CLP",
+  "subject": "Product Purchase",
+  "payer_name": "John Doe",
+  "payment_method": "regular_transfer",
+  "conciliation_date": "2024-03-01T13:00:00Z"
+}
+```
